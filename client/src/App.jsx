@@ -54,7 +54,7 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
   const fileInputRef = useRef(null);
-  const composerRef = useRef(null);\n  const composerRef = useRef(null);
+  const composerRef = useRef(null);
   const abortControllerRef = useRef(null);
   const endRef = useRef(null);
 
