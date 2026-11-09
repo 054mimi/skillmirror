@@ -51,7 +51,7 @@ export default function App() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("Checking connection…");
-  const [searchTerm, setSearchTerm] = useState("");\n  const [selectedFiles, setSelectedFiles] = useState([]);\n  const fileInputRef = useRef(null);
+  const [searchTerm, setSearchTerm] = useState("");\n  const [selectedFiles, setSelectedFiles] = useState([]);\n  const fileInputRef = useRef(null);\n  const composerRef = useRef(null);
   const abortControllerRef = useRef(null);
   const endRef = useRef(null);
 
@@ -269,7 +269,7 @@ export default function App() {
               {actions.length > 0 && <div className="action-trace"><WandSparkles size={14} /><span>AGENT ACTIONS</span>{actions.map((action, index) => <small key={index}>{action.tool.replaceAll("_", " ")} {action.success ? "✓" : "!"}</small>)}</div>}
               {selectedFiles.length > 0 && <div className="attachment-preview">{selectedFiles.map((file, index) => <span key={index}><FileText size={13} />{file.name}<button type="button" onClick={() => setSelectedFiles((files) => files.filter((_, i) => i !== index))} aria-label={"Remove " + file.name}><X size={12} /></button></span>)}</div>}
               <form className="composer" onSubmit={(event) => { event.preventDefault(); sendMessage(); }}>
-                <textarea value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => {
+                <textarea ref={composerRef} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => {
                   if (event.key === "Enter" && !event.shiftKey && !busy) { event.preventDefault(); sendMessage(); }
                 }} placeholder="Message SkillMirror…" rows={2} aria-label="Message SkillMirror" />
                 <input ref={fileInputRef} className="visually-hidden-file" type="file" multiple onChange={(event) => {
