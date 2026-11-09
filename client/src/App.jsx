@@ -48,9 +48,28 @@ export default function App() {
           history: messages.slice(-10)
         })
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "The agent couldn't respond.");
-      setMessages((current) => [...current, { role: "assistant", content: data.reply }]);
+
+      const responseText = await response.text();
+      let data;
+
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        throw new Error(
+          `Backend returned an invalid response (HTTP ${response.status}).`
+        );
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || `Request failed with status ${response.status}.`
+        );
+      }
+
+      setMessages((current) => [
+        ...current,
+        { role: "assistant", content: data.reply }
+      ]);
       if (data.assessmentId) setAssessmentId(data.assessmentId);
       if (data.challengeId) setChallengeId(data.challengeId);
       setActions(data.actions || []);
