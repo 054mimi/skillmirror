@@ -23,8 +23,15 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/agent", agentRoutes);
 
 app.use((err, _req, res, _next) => {
-  console.error(err);
-  res.status(500).json({ error: "Something went wrong on the server." });
+  console.error("SkillMirror API error:", err);
+
+  const status = Number(err.status) || 500;
+  const message =
+    process.env.NODE_ENV === "production"
+      ? "Something went wrong on the server."
+      : err.message || "Something went wrong on the server.";
+
+  res.status(status).json({ error: message });
 });
 
 app.listen(PORT, () => {
