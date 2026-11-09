@@ -3,7 +3,7 @@ import { ArrowUp, Bot, BrainCircuit, ChevronRight, CircleHelp, FileText, Menu, P
 
 const STORAGE_KEY = "skillmirror.conversations.v1";
 
-function createId() {
+// randomUUID is unavailable on some HTTP LAN origins; keep conversation IDs working there too.\nfunction createId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();
   if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
     const bytes = new Uint8Array(16);
