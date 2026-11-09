@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUp, Bot, BrainCircuit, ChevronRight, CircleHelp, FileText, Menu, Plus, Search, Sparkles, Square, Trash2, UserRound, WandSparkles, Pencil, Paperclip, X } from "lucide-react";
 
 const STORAGE_KEY = "skillmirror.conversations.v1";
@@ -43,7 +43,7 @@ function MessageContent({ content = "" }) {
   let paragraph = [], items = [], listType = null, code = [], inCode = false;
   const flushParagraph = () => {
     if (paragraph.length) {
-      blocks.push(<p key={"p" + blocks.length}>{paragraph.map((line, i) => <React.Fragment key={i}>{i > 0 && <br />}{inline(line, "p" + i)}</React.Fragment>)}</p>);
+      blocks.push(<p key={"p" + blocks.length}>{paragraph.map((line, i) => <Fragment key={i}>{i > 0 && <br />}{inline(line, "p" + i)}</Fragment>)}</p>);
       paragraph = [];
     }
   };
