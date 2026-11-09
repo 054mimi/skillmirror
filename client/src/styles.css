@@ -33,3 +33,32 @@ footer{margin-top:23px;text-align:center;font:9px 'DM Mono',monospace;letter-spa
 .stop-button:hover{background:#713744!important}
 @media(max-width:950px){.conversation-list{max-height:260px}.side-bottom{margin-top:12px}}
 @media(max-width:650px){.history-heading{margin-top:20px}.conversation-list{max-height:180px}.conversation-actions{opacity:1}}
+
+
+/* Chat-first workspace: keep the viewport fixed and scroll only the conversation/sidebar history. */
+html,body,#root{width:100%;height:100%;min-height:0;overflow:hidden}
+body{height:100dvh;min-height:0}
+.app-shell{height:100dvh;min-height:0;overflow:hidden}
+.sidebar{height:100dvh;min-height:0;overflow:hidden}
+.main{height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.topbar{flex:0 0 60px}
+.content{flex:1;min-height:0;width:100%;max-width:none;margin:0;padding:16px 22px 18px;display:flex;overflow:hidden}
+.chat-layout{flex:1;min-height:0;display:flex;align-items:stretch}
+.chat-panel{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;border-radius:12px}
+.chat-header{flex:0 0 62px}
+.messages{flex:1;height:auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+.composer{flex:0 0 auto}
+.composer textarea{resize:none;min-height:44px;max-height:150px}
+.composer-bottom{min-height:32px}
+.composer-hints{display:flex;align-items:center;gap:9px;min-width:0}
+.attach-button{width:30px;height:30px;flex:0 0 30px;border:1px solid #344054;border-radius:7px;background:#172231;color:#a9b8c9;display:grid;place-items:center;cursor:pointer}
+.attach-button:hover{border-color:#79d7b4;color:#9ce8c5;background:#1b302e}
+.visually-hidden-file{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.attachment-preview{display:flex;flex-wrap:wrap;gap:7px;padding:9px 14px 0}
+.attachment-preview>span{display:flex;align-items:center;gap:6px;max-width:220px;padding:6px 8px;border:1px solid #344357;border-radius:7px;background:#1a2636;color:#c9d5e4;font-size:10px}
+.attachment-preview>span svg{flex:0 0 auto;color:#8ed8b8}
+.attachment-preview>span button{display:grid;place-items:center;border:0;background:transparent;color:#9baabd;cursor:pointer;padding:2px}
+.privacy-note{flex:0 0 auto;margin-top:0}
+.conversation-list{min-height:0}
+@media(max-width:950px){.sidebar{height:100dvh}.main{height:100dvh}.content{padding:12px 14px}.conversation-list{flex:1;max-height:none}}
+@media(max-width:650px){.sidebar{display:none}.content{padding:10px}.chat-panel{border-radius:9px}.messages{padding:14px 10px}.composer{margin:0 9px 8px}.privacy-note{font-size:8px}.topbar{flex-basis:52px;padding:0 13px}}
