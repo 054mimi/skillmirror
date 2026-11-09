@@ -10,3 +10,26 @@
 footer{margin-top:23px;text-align:center;font:9px 'DM Mono',monospace;letter-spacing:1px;color:#58677c}footer span{color:#8ddab9;margin:0 5px}
 @media(max-width:950px){.sidebar{width:205px}.chat-layout{grid-template-columns:minmax(0,1fr)}.right-rail{display:grid;grid-template-columns:1fr 1fr}.domain-chip{grid-column:1/-1}}
 @media(max-width:650px){.sidebar{display:none}.topbar{padding:0 17px}.content{padding:28px 15px 20px}.welcome h1{font-size:37px}.welcome-copy{font-size:12px}.right-rail{grid-template-columns:1fr}.domain-chip{grid-column:auto}.messages{height:390px;padding:16px 12px}.message-row{max-width:100%}.top-right{font-size:9px}}
+
+
+/* Conversation history: compact, searchable chat navigation. */
+.history-heading{margin-top:25px}
+.history-heading .side-label{display:block;margin:0 9px 11px}
+.history-search{height:34px;margin:0 2px 10px;padding:0 9px;display:flex;align-items:center;gap:7px;border:1px solid #2b3546;border-radius:7px;background:#0f1724;color:#718197}
+.history-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#e4eaf2;font:11px 'DM Sans',sans-serif}
+.history-search input::placeholder{color:#68788e}
+.conversation-list{flex:1;min-height:100px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;padding:0 1px 12px}
+.conversation-item{position:relative;display:flex;align-items:center;border:1px solid transparent;border-radius:7px}
+.conversation-item.selected{background:#1b2935;border-color:#2a453d}
+.conversation-select{min-width:0;flex:1;padding:9px 7px 8px 10px;text-align:left;border:0;background:transparent;color:#c8d2df;cursor:pointer}
+.conversation-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.conversation-date{display:block;margin-top:4px;color:#718197;font:9px 'DM Mono',monospace}
+.conversation-actions{display:flex;gap:1px;padding-right:4px;opacity:0}
+.conversation-item:hover .conversation-actions,.conversation-item:focus-within .conversation-actions{opacity:1}
+.conversation-actions button{width:24px;height:25px;border:0;border-radius:5px;background:transparent;color:#8d9bb0;display:grid;place-items:center;cursor:pointer}
+.conversation-actions button:hover{background:#2b394a;color:#dce7f3}
+.empty-history{padding:8px 10px;color:#718197;font-size:10px}
+.stop-button{width:30px;height:30px;border:1px solid #a65c63!important;border-radius:7px;background:#512b35!important;color:#ffdce0!important;display:grid;place-items:center;cursor:pointer}
+.stop-button:hover{background:#713744!important}
+@media(max-width:950px){.conversation-list{max-height:260px}.side-bottom{margin-top:12px}}
+@media(max-width:650px){.history-heading{margin-top:20px}.conversation-list{max-height:180px}.conversation-actions{opacity:1}}
