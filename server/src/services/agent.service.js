@@ -170,7 +170,7 @@ Use these exact IDs when calling tools for the active assessment or challenge.`
     },
     ...history.map((item) => ({
       role: item.role === "assistant" ? "assistant" : "user",
-      content: String(item.content || "").slice(0, 5000)
+      content: String(item.content || "").slice(0, 2500)
     })),
     {
       role: "user",
@@ -254,9 +254,11 @@ Use these exact IDs when calling tools for the active assessment or challenge.`
         if (name === "record_answer") {
           const controlMessage = message.trim().toLowerCase();
           const isControlMessage = /^(skip|pause|stop|quit|finish|finish early|new assessment|start over|cancel)$/i.test(controlMessage);
+          const isHelpRequest = /^(help|hint|explain|i need help|please help|help me out|i don't know|i dont know|i can't tell|i cannot tell|not sure)$/i.test(controlMessage) ||
+            /\b(help me|need help|give me a hint|hint please|explain this|show me how|can't tell|cannot tell|don't know the answer|dont know the answer)\b/i.test(controlMessage);
 
-          if (isControlMessage || !message.trim()) {
-            throw new Error("The learner has not submitted an answer to the active challenge.");
+          if (isControlMessage || isHelpRequest || !message.trim()) {
+            throw new Error("The learner has not submitted an answer to the active challenge. If they asked for help, respond as a tutor instead of recording an answer.");
           }
 
           args.answer = message.trim();
