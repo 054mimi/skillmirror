@@ -1,7 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUp, Bot, BrainCircuit, ChevronRight, CircleHelp, FileText, Menu, Plus, Search, Sparkles, Square, Trash2, UserRound, WandSparkles, Pencil, Paperclip, X } from "lucide-react";
 
-const STORAGE_KEY = "skillmirror.conversations.v1";\n\nfunction createId() {\n  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();\n  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {\n    const bytes = new Uint8Array(16);\n    crypto.getRandomValues(bytes);\n    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");\n  }\n  return `conversation-${Date.now()}-${Math.random().toString(36).slice(2)}`;\n}
+const STORAGE_KEY = "skillmirror.conversations.v1";
+
+function createId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  }
+  return `conversation-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
 const starterMessages = [{
   role: "assistant",
   content: "Hey! I'm SkillMirror, your skill assessment agent. I help you discover what you can actually demonstrate, not just what you claim to know. To get started, what technical skill would you like us to assess?"
