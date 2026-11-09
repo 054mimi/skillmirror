@@ -30,6 +30,52 @@ function createConversation() {
   };
 }
 
+function MessageContent({ content = "" }) {
+  const normalized = String(content).replace(/&#x20;/gi, " ").replace(/\\([*_-])/g, "$1").replace(/\\\x60/g, "\x60");
+  const inline = (value, prefix) => value.split(/(\*\*[^*]+\*\*|\*[^*]+\*|\x60[^\x60]+\x60)/g).map((part, i) => {
+    const key = prefix + i;
+    if (part.startsWith("**") && part.endsWith("**")) return <strong key={key}>{part.slice(2, -2)}</strong>;
+    if (part.startsWith("*") && part.endsWith("*")) return <em key={key}>{part.slice(1, -1)}</em>;
+    if (part.charCodeAt(0) === 96 && part.charCodeAt(part.length - 1) === 96) return <code key={key}>{part.slice(1, -1)}</code>;
+    return part;
+  });
+  const blocks = [];
+  let paragraph = [], items = [], listType = null, code = [], inCode = false;
+  const flushParagraph = () => {
+    if (paragraph.length) {
+      blocks.push(<p key={"p" + blocks.length}>{paragraph.map((line, i) => <React.Fragment key={i}>{i > 0 && <br />}{inline(line, "p" + i)}</React.Fragment>)}</p>);
+      paragraph = [];
+    }
+  };
+  const flushList = () => {
+    if (items.length) {
+      const Tag = listType === "ol" ? "ol" : "ul";
+      blocks.push(<Tag key={"l" + blocks.length}>{items.map((item, i) => <li key={i}>{inline(item, "l" + i)}</li>)}</Tag>);
+      items = []; listType = null;
+    }
+  };
+  normalized.split("\n").forEach((line) => {
+    if (line.trim().startsWith("\x60\x60\x60")) {
+      if (inCode) { blocks.push(<pre key={"c" + blocks.length}><code>{code.join("\n")}</code></pre>); code = []; inCode = false; }
+      else { flushParagraph(); flushList(); inCode = true; }
+      return;
+    }
+    if (inCode) { code.push(line); return; }
+    const bullet = line.match(/^\s*[-*]\s+(.+)$/);
+    const numbered = line.match(/^\s*\d+[.)]\s+(.+)$/);
+    if (bullet || numbered) {
+      flushParagraph();
+      const type = numbered ? "ol" : "ul";
+      if (listType && listType !== type) flushList();
+      listType = type; items.push((bullet || numbered)[1]);
+    } else if (!line.trim()) { flushParagraph(); flushList(); }
+    else { flushList(); paragraph.push(line); }
+  });
+  if (inCode) blocks.push(<pre key="c-final"><code>{code.join("\n")}</code></pre>);
+  flushParagraph(); flushList();
+  return <div className="message-content">{blocks}</div>;
+}
+
 function makeTitle(message) {
   const clean = message.replace(/\s+/g, " ").trim();
   return clean.length > 34 ? clean.slice(0, 34).trimEnd() + "…" : clean;
@@ -195,7 +241,7 @@ export default function App() {
           ...item,
           messages: [...item.messages, {
             role: "assistant",
-            content: "I couldn't reach my reasoning service: " + error.message + " Check that the backend is running and the API key is configured."
+            content: error.message || "SkillMirror could not complete that response. Your conversation is saved; please try again."
           }]
         }));
       }
@@ -267,7 +313,7 @@ export default function App() {
                 {messages.map((message, index) => (
                   <div className={"message-row " + message.role} key={index}>
                     {message.role === "assistant" && <div className="message-avatar"><Sparkles size={15} /></div>}
-                    <div className="message-bubble"><span className="message-author">{message.role === "assistant" ? "SKILLMIRROR" : "YOU"}</span><p>{message.content}</p></div>
+                    <div className="message-bubble"><span className="message-author">{message.role === "assistant" ? "SKILLMIRROR" : "YOU"}</span><MessageContent content={message.content} /></div>
                     {message.role === "user" && <div className="user-avatar"><UserRound size={15} /></div>}
                   </div>
                 ))}
