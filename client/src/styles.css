@@ -62,3 +62,7 @@ body{height:100dvh;min-height:0}
 .conversation-list{min-height:0}
 @media(max-width:950px){.sidebar{height:100dvh}.main{height:100dvh}.content{padding:12px 14px}.conversation-list{flex:1;max-height:none}}
 @media(max-width:650px){.sidebar{display:none}.content{padding:10px}.chat-panel{border-radius:9px}.messages{padding:14px 10px}.composer{margin:0 9px 8px}.privacy-note{font-size:8px}.topbar{flex-basis:52px;padding:0 13px}}
+
+
+/* Readable, safe Markdown content in assistant messages. */
+.message-content p{white-space:pre-wrap;margin:5px 0 0;font-size:12px;line-height:1.7;color:#d9e0eb}.message-content ul,.message-content ol{margin:8px 0 5px;padding-left:21px;color:#d9e0eb;font-size:12px;line-height:1.7}.message-content li{padding-left:3px;margin:2px 0}.message-content strong{font-weight:700;color:#f0f5fa}.message-content em{font-style:italic}.message-content code{font:11px 'DM Mono',monospace;color:#a9edcd;background:#101a26;padding:2px 5px;border-radius:4px}.message-content pre{overflow-x:auto;margin:9px 0 4px;padding:12px;border:1px solid #344357;border-radius:7px;background:#0c1420;color:#dce8f3;font:11px/1.6 'DM Mono',monospace;white-space:pre}.message-content pre code{padding:0;background:transparent;color:inherit}
