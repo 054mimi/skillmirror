@@ -91,7 +91,9 @@ export async function executeTool(name, args) {
       skill: args.skill,
       experienceLevel: args.experienceLevel,
       goal: args.goal?.trim() || null,
-      competencies: args.competencies,
+      competencies: Array.isArray(args.competencies)
+        ? args.competencies
+        : [],
       challenges: [],
       createdAt: new Date().toISOString(),
       report: null
