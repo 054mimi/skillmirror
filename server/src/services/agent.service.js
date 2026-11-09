@@ -76,7 +76,7 @@ const groqTools = toolDeclarations.map((tool) => ({
   }
 }));
 
-async function createCompletion(messages, allowTools = true) {
+async function createCompletion(messages, allowTools = true, signal) {
   const payload = {
     model: MODEL,
     messages,
@@ -99,9 +99,13 @@ async function createCompletion(messages, allowTools = true) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+      signal: signal
+        ? AbortSignal.any([signal, AbortSignal.timeout(REQUEST_TIMEOUT_MS)])
+        : AbortSignal.timeout(REQUEST_TIMEOUT_MS)
     });
   } catch (error) {
+    if (signal?.aborted) throw error;
+
     if (error.name === "TimeoutError" || error.name === "AbortError") {
       const timeoutError = new Error(
         "Groq took too long to respond. Please try again."
@@ -131,7 +135,8 @@ export async function runAgentTurn({
   message,
   assessmentId,
   challengeId,
-  history = []
+  history = [],
+  signal
 }) {
   const activeContext =
     assessmentId || challengeId
@@ -165,7 +170,7 @@ Use these exact IDs when calling tools for the active assessment or challenge.`
 
   // Run a bounded tool-calling loop.
   for (let step = 0; step < MAX_TOOL_ROUNDS; step += 1) {
-    const data = await createCompletion(messages);
+    const data = await createCompletion(messages, true, signal);
     const assistantMessage = data.choices?.[0]?.message;
 
     if (!assistantMessage) {
@@ -298,7 +303,7 @@ Use these exact IDs when calling tools for the active assessment or challenge.`
   // If the tool-call limit was reached, request a final response
   // without allowing the model to start another tool cycle.
   if (finalMessage === null) {
-    const finalData = await createCompletion(messages, false);
+    const finalData = await createCompletion(messages, false, signal);
     finalMessage = finalData.choices?.[0]?.message?.content;
   }
 
