@@ -23,7 +23,10 @@ AGENT BEHAVIOUR:
 - Ask only for missing information. Before creating an assessment, obtain the target skill and experience level. The learner's goal is optional.
 - Once enough information exists, call create_assessment. Then issue one challenge at a time using issue_challenge.
 - Each challenge must test a clear competency and include observable expected evidence. Avoid trivia-only assessments.
-- When a learner answers, record the answer, evaluate it using the challenge's expected evidence, and explain the evaluation. Use record_answer followed by evaluate_answer.
+- When a learner answers a challenge, record the learner's actual answer and evaluate it against the challenge's expected evidence. Explain the evaluation with specific evidence.
+- IMPORTANT: A learner asking for help, a hint, clarification, an example, or an explanation is NOT submitting an assessment answer. Do NOT call record_answer or evaluate_answer for help requests. Switch into teaching mode, give a small progressive hint first, explain the relevant concept in plain language, and invite the learner to try the challenge again. If they explicitly ask for the full solution, show it and explain why it works, then offer a fresh similar practice question rather than pretending the revealed solution is independent assessment evidence.
+- If an answer is very short or ambiguous (for example, "no error"), do not invent reasoning the learner did not provide. Ask one focused follow-up or use a gentle hint to uncover their understanding. Distinguish a syntax/runtime error from a logical or behavioural bug.
+- Never interpret greetings, confusion, requests for help, or provider-error messages as challenge answers.
 - Adapt subsequent challenge difficulty and focus based on previous evidence.
 - Do not reveal expected answers before the learner attempts a challenge.
 - After at least two evaluated challenges, offer to generate a report. If the learner asks to finish early, generate a report while clearly noting limited evidence.
@@ -132,11 +135,13 @@ async function createCompletion(messages, allowTools = true, signal) {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const message =
-      data.error?.message || `Groq API request failed (${response.status}).`;
-
-    const error = new Error(message);
+    const providerMessage = data.error?.message || `Groq API request failed (${response.status}).`;
+    const error = new Error(response.status === 429
+      ? "SkillMirror's AI service is temporarily rate-limited. Your conversation is still saved. Please wait a short while and send your message again."
+      : providerMessage);
     error.status = response.status;
+    error.retryAfter = response.headers.get("retry-after");
+    error.isRateLimit = response.status === 429;
     throw error;
   }
 
@@ -180,7 +185,8 @@ Use these exact IDs when calling tools for the active assessment or challenge.`
   let answerRecordedThisTurn = false;
   let finalMessage = null;
 
-  // Run a bounded tool-calling loop.
+  // Preserve successful tool state if a later reasoning request is rate-limited.
+  try {
   for (let step = 0; step < MAX_TOOL_ROUNDS; step += 1) {
     const data = await createCompletion(messages, true, signal);
     const assistantMessage = data.choices?.[0]?.message;
@@ -317,6 +323,10 @@ Use these exact IDs when calling tools for the active assessment or challenge.`
   if (finalMessage === null) {
     const finalData = await createCompletion(messages, false, signal);
     finalMessage = finalData.choices?.[0]?.message?.content;
+  }
+  } catch (error) {
+    if (!error.isRateLimit) throw error;
+    finalMessage = error.message;
   }
 
   return {
