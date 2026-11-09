@@ -36,6 +36,21 @@ const API_URL = "https://api.groq.com/openai/v1/chat/completions";
 const MAX_TOOL_ROUNDS = 5;
 const REQUEST_TIMEOUT_MS = 45000;
 
+// Some Groq models return camelCase function names even though the
+// registered tools use snake_case. Normalize them before sending the
+// assistant tool-call message back to Groq or executing the tool.
+const TOOL_NAME_ALIASES = {
+  createAssessment: "create_assessment",
+  issueChallenge: "issue_challenge",
+  recordAnswer: "record_answer",
+  evaluateAnswer: "evaluate_answer",
+  generateReport: "generate_report"
+};
+
+function normalizeToolName(name) {
+  return TOOL_NAME_ALIASES[name] || name;
+}
+
 function getGroqKey() {
   const key = process.env.GROQ_API_KEY;
 
@@ -162,10 +177,22 @@ Use these exact IDs when calling tools for the active assessment or challenge.`
       break;
     }
 
-    // Preserve the assistant's original tool-call message.
-    messages.push(assistantMessage);
+    // Keep tool-call names identical to the registered declarations.
+    // This also prevents Groq from rejecting the next request because
+    // a prior assistant message referenced an undeclared camelCase name.
+    const normalizedAssistantMessage = {
+      ...assistantMessage,
+      tool_calls: calls.map((call) => ({
+        ...call,
+        function: {
+          ...call.function,
+          name: normalizeToolName(call.function?.name)
+        }
+      }))
+    };
+    messages.push(normalizedAssistantMessage);
 
-    for (const call of calls) {
+    for (const call of normalizedAssistantMessage.tool_calls) {
       const name = call.function?.name;
       let args = {};
 
