@@ -16,7 +16,7 @@ app.get("/api/health", (_req, res) => {
   res.json({
     status: "ok",
     service: "SkillMirror API",
-    aiConfigured: Boolean(process.env.GEMINI_API_KEY)
+    aiConfigured: Boolean(process.env.GROQ_API_KEY)
   });
 });
 
