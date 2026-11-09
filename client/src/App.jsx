@@ -207,7 +207,7 @@ export default function App() {
           message: clean,
           assessmentId: previous.assessmentId,
           challengeId: previous.challengeId,
-          history: previous.messages.slice(-10)
+          history: previous.messages.slice(-8)
         })
       });
 
