@@ -51,7 +51,10 @@ export default function App() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("Checking connection…");
-  const [searchTerm, setSearchTerm] = useState("");\n  const [selectedFiles, setSelectedFiles] = useState([]);\n  const fileInputRef = useRef(null);\n  const composerRef = useRef(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const fileInputRef = useRef(null);
+  const composerRef = useRef(null);\n  const composerRef = useRef(null);
   const abortControllerRef = useRef(null);
   const endRef = useRef(null);
 
@@ -80,6 +83,11 @@ export default function App() {
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, busy]);
+
+  // Restore the caret after Send is clicked and keep the composer ready after a response.
+  useEffect(() => {
+    composerRef.current?.focus();
+  }, [busy]);
 
   function updateConversation(id, updater) {
     setConversations((current) => current.map((item) =>
