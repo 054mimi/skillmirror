@@ -15,7 +15,7 @@ function createId() {
 }
 const starterMessages = [{
   role: "assistant",
-  content: "Hey! I'm SkillMirror, your skill assessment agent. I help you discover what you can actually demonstrate, not just what you claim to know. To get started, what technical skill would you like us to assess?"
+  content: "Hey! I'm SkillMirror, your skill assessment agent. I help you discover what you can actually demonstrate, not just what you claim to know. To get started, what skill or subject would you like us to assess?"
 }];
 
 function createConversation() {
