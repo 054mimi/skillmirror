@@ -4,7 +4,7 @@ import { readStore, writeStore } from "./storage.service.js";
 export const toolDeclarations = [
   {
     name: "create_assessment",
-    description: "Create a new skill assessment for the user. Use when the user has provided enough context to begin: target skill, experience level, and goal.",
+    description: "Create a new skill assessment once the target skill and experience level are known. The learner's goal is optional. If they decline to provide it, proceed without it.",
     parametersJsonSchema: {
       type: "object",
       properties: {
@@ -14,7 +14,7 @@ export const toolDeclarations = [
         goal: { type: "string" },
         competencies: { type: "array", items: { type: "string" } }
       },
-      required: ["skill", "experienceLevel", "goal", "competencies"]
+      required: ["skill", "experienceLevel"]
     }
   },
   {
@@ -90,7 +90,7 @@ export async function executeTool(name, args) {
       learnerName: args.learnerName || "Learner",
       skill: args.skill,
       experienceLevel: args.experienceLevel,
-      goal: args.goal,
+      goal: args.goal?.trim() || null,
       competencies: args.competencies,
       challenges: [],
       createdAt: new Date().toISOString(),
