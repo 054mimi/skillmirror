@@ -159,6 +159,8 @@ Use these exact IDs when calling tools for the active assessment or challenge.`
   const actions = [];
   let activeAssessmentId = assessmentId;
   let activeChallengeId = challengeId;
+  const challengeIdAtTurnStart = challengeId;
+  let answerRecordedThisTurn = false;
   let finalMessage = null;
 
   // Run a bounded tool-calling loop.
@@ -213,7 +215,41 @@ Use these exact IDs when calling tools for the active assessment or challenge.`
           args.challengeId = activeChallengeId;
         }
 
+        // A challenge issued during this same turn cannot be answered
+        // until the learner has received it and sent a separate message.
+        if (
+          (name === "record_answer" || name === "evaluate_answer") &&
+          !challengeIdAtTurnStart
+        ) {
+          throw new Error(
+            "Wait for the learner to receive the challenge and submit an answer before recording or evaluating it."
+          );
+        }
+
+        // Always store the learner's actual current message as the answer.
+        // Never trust answer text invented or paraphrased by the model.
+        if (name === "record_answer") {
+          const controlMessage = message.trim().toLowerCase();
+          const isControlMessage = /^(skip|pause|stop|quit|finish|finish early|new assessment|start over|cancel)$/i.test(controlMessage);
+
+          if (isControlMessage || !message.trim()) {
+            throw new Error("The learner has not submitted an answer to the active challenge.");
+          }
+
+          args.answer = message.trim();
+        }
+
+        if (name === "evaluate_answer" && !answerRecordedThisTurn) {
+          throw new Error(
+            "An answer must be successfully recorded during this turn before it can be evaluated."
+          );
+        }
+
         const result = await executeTool(name, args);
+
+        if (name === "record_answer" && result.success) {
+          answerRecordedThisTurn = true;
+        }
 
         if (result.assessmentId) {
           activeAssessmentId = result.assessmentId;
