@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, Bot, BrainCircuit, ChevronRight, CircleHelp, Code2, Compass, FileText, Gauge, Menu, Plus, Search, Sparkles, Square, Target, Trash2, UserRound, WandSparkles, Pencil } from "lucide-react";
+import { ArrowUp, Bot, BrainCircuit, ChevronRight, CircleHelp, FileText, Menu, Plus, Search, Sparkles, Square, Trash2, UserRound, WandSparkles, Pencil, Paperclip, X } from "lucide-react";
 
-const STORAGE_KEY = "skillmirror.conversations.v1";
+const STORAGE_KEY = "skillmirror.conversations.v1";\n\nfunction createId() {\n  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();\n  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {\n    const bytes = new Uint8Array(16);\n    crypto.getRandomValues(bytes);\n    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");\n  }\n  return `conversation-${Date.now()}-${Math.random().toString(36).slice(2)}`;\n}
 const starterMessages = [{
   role: "assistant",
   content: "Hey! I'm SkillMirror, your skill assessment agent. I help you discover what you can actually demonstrate, not just what you claim to know. To get started, what technical skill would you like us to assess?"
@@ -9,7 +9,7 @@ const starterMessages = [{
 
 function createConversation() {
   return {
-    id: crypto.randomUUID(),
+    id: createId(),
     title: "New assessment",
     messages: starterMessages,
     assessmentId: null,
@@ -40,7 +40,7 @@ export default function App() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("Checking connection…");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");\n  const [selectedFiles, setSelectedFiles] = useState([]);\n  const fileInputRef = useRef(null);
   const abortControllerRef = useRef(null);
   const endRef = useRef(null);
 
@@ -237,12 +237,6 @@ export default function App() {
         </header>
 
         <section className="content">
-          <div className="welcome">
-            <div className="eyebrow"><span className="eyebrow-line" /> YOUR PERSONAL SKILL ASSESSMENT AGENT</div>
-            <h1>See your skills.<br /><em>Prove your potential.</em></h1>
-            <p className="welcome-copy">Go beyond self-assessment. Take practical challenges, demonstrate what you know, and uncover what to work on next.</p>
-          </div>
-
           <div className="chat-layout">
             <section className="chat-panel">
               <div className="chat-header">
@@ -250,53 +244,41 @@ export default function App() {
                 <div><strong>SkillMirror Agent</strong><span><i /> {busy ? "Working on your response" : "Ready to assess"}</span></div>
                 <button className="icon-button" title="Start a new chat" onClick={startNewConversation}><Plus size={18} /></button>
               </div>
-
               <div className="messages">
                 {messages.map((message, index) => (
                   <div className={"message-row " + message.role} key={index}>
                     {message.role === "assistant" && <div className="message-avatar"><Sparkles size={15} /></div>}
-                    <div className="message-bubble">
-                      <span className="message-author">{message.role === "assistant" ? "SKILLMIRROR" : "YOU"}</span>
-                      <p>{message.content}</p>
-                    </div>
+                    <div className="message-bubble"><span className="message-author">{message.role === "assistant" ? "SKILLMIRROR" : "YOU"}</span><p>{message.content}</p></div>
                     {message.role === "user" && <div className="user-avatar"><UserRound size={15} /></div>}
                   </div>
                 ))}
                 {busy && <div className="message-row assistant"><div className="message-avatar"><Sparkles size={15} /></div><div className="typing"><span /><span /><span /><small>Agent is thinking and choosing its next action</small></div></div>}
                 <div ref={endRef} />
               </div>
-
               {actions.length > 0 && <div className="action-trace"><WandSparkles size={14} /><span>AGENT ACTIONS</span>{actions.map((action, index) => <small key={index}>{action.tool.replaceAll("_", " ")} {action.success ? "✓" : "!"}</small>)}</div>}
-
+              {selectedFiles.length > 0 && <div className="attachment-preview">{selectedFiles.map((file, index) => <span key={index}><FileText size={13} />{file.name}<button type="button" onClick={() => setSelectedFiles((files) => files.filter((_, i) => i !== index))} aria-label={"Remove " + file.name}><X size={12} /></button></span>)}</div>}
               <form className="composer" onSubmit={(event) => { event.preventDefault(); sendMessage(); }}>
                 <textarea value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => {
-                  if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); sendMessage(); }
-                }} placeholder="Message SkillMirror…" rows={2} disabled={busy} />
+                  if (event.key === "Enter" && !event.shiftKey && !busy) { event.preventDefault(); sendMessage(); }
+                }} placeholder="Message SkillMirror…" rows={2} aria-label="Message SkillMirror" />
+                <input ref={fileInputRef} className="visually-hidden-file" type="file" multiple onChange={(event) => {
+                  const files = Array.from(event.target.files || []);
+                  setSelectedFiles((current) => [...current, ...files].slice(0, 5));
+                  event.target.value = "";
+                }} />
                 <div className="composer-bottom">
-                  <span><CircleHelp size={13} /> Be specific. Your answers help the agent adapt.</span>
-                  {busy
-                    ? <button className="stop-button" type="button" onClick={() => abortControllerRef.current?.abort()} title="Stop response" aria-label="Stop response"><Square size={13} fill="currentColor" /></button>
-                    : <button type="submit" disabled={!input.trim()} title="Send message"><ArrowUp size={18} /></button>}
+                  <div className="composer-hints">
+                    <button className="attach-button" type="button" onClick={() => fileInputRef.current?.click()} title="Choose files (agent file processing is not connected yet)" aria-label="Choose attachments"><Paperclip size={16} /></button>
+                    <span><CircleHelp size={13} /> {busy ? "You can keep typing while SkillMirror responds." : "Be specific. Your answers help the agent adapt."}</span>
+                  </div>
+                  {busy ? <button className="stop-button" type="button" onClick={() => abortControllerRef.current?.abort()} title="Stop response" aria-label="Stop response"><Square size={13} fill="currentColor" /></button> : <button type="submit" disabled={!input.trim()} title="Send message"><ArrowUp size={18} /></button>}
                 </div>
               </form>
               <p className="privacy-note"><FileText size={12} /> Assessment feedback reflects evidence from this session, not a formal certification.</p>
             </section>
-
-            <aside className="right-rail">
-              <div className="rail-card">
-                <div className="rail-title"><Code2 size={16} /> HOW IT WORKS</div>
-                <div className="step"><b>01</b><div><strong>Discover</strong><p>Share your experience and goals.</p></div></div>
-                <div className="step"><b>02</b><div><strong>Demonstrate</strong><p>Complete adaptive, practical challenges.</p></div></div>
-                <div className="step"><b>03</b><div><strong>Understand</strong><p>Get feedback grounded in your answers.</p></div></div>
-                <div className="step"><b>04</b><div><strong>Develop</strong><p>Get a focused improvement plan.</p></div></div>
-              </div>
-              <div className="rail-note"><div><Sparkles size={15} /> THE SKILLMIRROR PROMISE</div><p>We don't measure what you <em>say</em> you know. We look at what you <em>show</em>.</p></div>
-              <div className="domain-chip"><span /> INITIAL DOMAIN <strong>Software development</strong></div>
-            </aside>
           </div>
-          <footer>SKILLMIRROR MVP <span>·</span> BUILT TO REVEAL REAL-WORLD POTENTIAL</footer>
         </section>
-      </main>
+        </main>
     </div>
   );
 }
